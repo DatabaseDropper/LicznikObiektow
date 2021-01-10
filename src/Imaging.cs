@@ -116,6 +116,11 @@ namespace LicznikObiektow
             return edgeInfo;
         }
 
+        /// <summary>
+        /// Grupowanie punktów (x, y) po kolorach
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
         private static Dictionary<Color, ColorInfo> _2DArrayGroup(Color[,] image)
         {
             var dictionary = new Dictionary<Color, ColorInfo>();
@@ -144,6 +149,12 @@ namespace LicznikObiektow
             return dictionary;
         }
 
+        /// <summary>
+        /// Nakładanie czerwonych ramek wokół obiektów na obrazie
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="edges"></param>
+        /// <returns></returns>
         public static Color[,] DrawEdges(Color[,] image, List<EdgeInfo> edges)
         {
             var width = image.GetLength(0);
@@ -171,6 +182,11 @@ namespace LicznikObiektow
             return result;
         }
 
+        /// <summary>
+        /// Zapisywanie tablicy 2D jako obraz do pliku
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="image"></param>
         public static void DrawImage(string path, Color[,] image)
         {
             var width = image.GetLength(0);
