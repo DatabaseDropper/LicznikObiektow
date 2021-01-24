@@ -33,6 +33,7 @@ namespace LicznikObiektow
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btn_AnalizaObrazu = new System.Windows.Forms.Button();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.lbl_Found = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
@@ -73,11 +74,21 @@ namespace LicznikObiektow
             this.pictureBox2.TabIndex = 3;
             this.pictureBox2.TabStop = false;
             // 
+            // lbl_Found
+            // 
+            this.lbl_Found.AutoSize = true;
+            this.lbl_Found.Location = new System.Drawing.Point(337, 44);
+            this.lbl_Found.Name = "lbl_Found";
+            this.lbl_Found.Size = new System.Drawing.Size(16, 13);
+            this.lbl_Found.TabIndex = 4;
+            this.lbl_Found.Text = "...";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.lbl_Found);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.btn_AnalizaObrazu);
             this.Controls.Add(this.pictureBox1);
@@ -88,6 +99,7 @@ namespace LicznikObiektow
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -97,6 +109,7 @@ namespace LicznikObiektow
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btn_AnalizaObrazu;
         private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Label lbl_Found;
     }
 }
 

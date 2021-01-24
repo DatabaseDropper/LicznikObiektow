@@ -19,6 +19,12 @@ namespace LicznikObiektow
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (pictureBox1.Image != null)
+                pictureBox1.Image.Dispose();
+
+            if (pictureBox2.Image != null)
+                pictureBox2.Image.Dispose();
+
             btn_AnalizaObrazu.Visible = false;
             using (var fd = new OpenFileDialog())
             {
@@ -37,10 +43,10 @@ namespace LicznikObiektow
         private async void btn_AnalizaObrazu_Click(object sender, EventArgs e)
         {
             Color[,] newImage = null;
+            ImageInfo info = null;
             await Task.Run(() =>
             {
-                var info = Imaging.GetImageDetails2(_image);
-
+                info = Imaging.GetImageDetails2(_image);
                 newImage = Imaging.DrawEdges2(_image, info.Groups);
             });
 
@@ -51,6 +57,8 @@ namespace LicznikObiektow
                 Imaging.DrawImage(sfd.FileName, newImage);
                 pictureBox2.Image = Image.FromFile(sfd.FileName);
             }
+
+            lbl_Found.Text = $"Odnaleziono {info.Groups.Count} obiektów";
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

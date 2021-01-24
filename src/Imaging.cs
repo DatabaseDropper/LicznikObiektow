@@ -88,7 +88,7 @@ namespace LicznikObiektow
                                        .Select(x => x.Value)
                                        .ToList();
 
-            info.Groups = GenerateEdges2(info.NonBackgroundColors);
+            info.Groups = GenerateGroups2(info.NonBackgroundColors);
 
             return info;
         }
@@ -106,7 +106,7 @@ namespace LicznikObiektow
             return edges;
         }
 
-        private static Dictionary<int, List<Point>> GenerateEdges2(List<ColorInfo> nonBackgroundColors)
+        private static Dictionary<int, List<Point>> GenerateGroups2(List<ColorInfo> nonBackgroundColors)
         {
             var dictionary = new Dictionary<int, List<Point>>();
 
@@ -132,7 +132,7 @@ namespace LicznikObiektow
 
             TryNormalize(checkLater, dictionary);
 
-            return dictionary;
+            return dictionary.Where(x => x.Value.Count > 0).ToDictionary(x => x.Key, x => x.Value);
         }
 
         private static void TryNormalize(List<(int Id, Point P)> checkLater, Dictionary<int, List<Point>> dictionary)
