@@ -84,6 +84,7 @@ namespace LicznikObiektow
             this.Controls.Add(this.btn_WczytajObraz);
             this.Name = "Form1";
             this.Text = "Wykrywanie Obiektow na Obrazach";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);

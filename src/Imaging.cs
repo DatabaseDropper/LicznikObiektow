@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
@@ -23,6 +24,26 @@ namespace LicznikObiektow
                     var pixel = img.GetPixel(i, j);
 
                     arr[i, j] = pixel;
+                }
+            }
+
+            return arr;
+        }
+
+        public static Color[,] ConvertFileTo2DArrayWithGrayScale(string fileName)
+        {
+            var img = new Bitmap(fileName);
+            var arr = new Color[img.Width, img.Height];
+
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+                    var pixel = img.GetPixel(i, j);
+
+                    var pixelValue = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
+
+                    arr[i, j] = pixelValue < 90 ? Color.Black : Color.White;
                 }
             }
 
@@ -54,6 +75,24 @@ namespace LicznikObiektow
             return info;
         }
 
+        public static ImageInfo GetImageDetails2(Color [,] image)
+        {
+            var info = new ImageInfo();
+
+            var grouped = _2DArrayGroup(image);
+
+            info.BackgroundColor = grouped.OrderByDescending(x => x.Value.Occured).First().Value;
+
+            info.NonBackgroundColors = grouped
+                                       .Where(x => x.Key != info.BackgroundColor.Color)
+                                       .Select(x => x.Value)
+                                       .ToList();
+
+            info.Groups = GenerateEdges2(info.NonBackgroundColors);
+
+            return info;
+        }
+
         private static List<EdgeInfo> GenerateEdges(List<ColorInfo> nonBackgroundColors)
         {
             var edges = new List<EdgeInfo>();
@@ -65,6 +104,135 @@ namespace LicznikObiektow
             }
 
             return edges;
+        }
+
+        private static Dictionary<int, List<Point>> GenerateEdges2(List<ColorInfo> nonBackgroundColors)
+        {
+            var dictionary = new Dictionary<int, List<Point>>();
+
+            var points = nonBackgroundColors.SelectMany(x => x.Points).ToList();
+
+            var checkLater = new List<(int Id, Point P)>();
+
+            foreach (var point in points)
+            {
+                var group = FindGroup(point, dictionary);
+
+                if (group.HasValue)
+                {
+                    dictionary[group.Value].Add(point);
+                }
+                else
+                {
+                    var id = dictionary.Count;
+                    dictionary.Add(id, new List<Point> { point });
+                    checkLater.Add((id, point));
+                }
+            }
+
+            TryNormalize(checkLater, dictionary);
+
+            return dictionary;
+        }
+
+        private static void TryNormalize(List<(int Id, Point P)> checkLater, Dictionary<int, List<Point>> dictionary)
+        {
+            foreach (var item in checkLater)
+            {
+                while (true)
+                {
+                    var anyPointWasMoved = false;
+                    var pointsToNormalize = dictionary[item.Id].ToList();
+
+                    foreach (var point in pointsToNormalize)
+                    {
+                        if (TryNormalizePoint(point, item.Id, dictionary))
+                        {
+                            anyPointWasMoved = true;
+                        }
+                    }
+
+                    if (!anyPointWasMoved)
+                        break;
+                }
+            }
+        }
+
+        private static bool TryNormalizePoint(Point point, int original_group_id, Dictionary<int, List<Point>> dictionary)
+        {
+            var groups = FindGroups(point, dictionary);
+
+            var other_groups = groups.Where(x => x != original_group_id).ToList();
+
+            if (other_groups.Any())
+            {
+                var original_group = dictionary[original_group_id];
+                original_group.Remove(point);
+                var other_grp = dictionary[other_groups.First()];
+                other_grp.Add(point);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static int? FindGroup(Point point, Dictionary<int, List<Point>> dictionary)
+        {
+            foreach (var entry in dictionary)
+            {
+                foreach (var p in entry.Value)
+                {
+                    if (PointIsNextToOtherPoint(point, p))
+                    {
+                        return entry.Key;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static List<int> FindGroups(Point point, Dictionary<int, List<Point>> dictionary)
+        {
+            var list = new List<int>();
+
+            foreach (var entry in dictionary)
+            {
+                foreach (var p in entry.Value)
+                {
+                    if (PointIsNextToOtherPoint(point, p))
+                    {
+                        list.Add(entry.Key);
+                    }
+                }
+            }
+
+            return list.Distinct().ToList();
+        }
+
+        public static bool PointIsNextToOtherPoint(Point point, Point newPoint)
+        {
+            var moveBy = new List<(int MoveX, int MoveY)>
+            {
+                (-1, 1),
+                (0, 1),
+                (1, 1),
+
+                (-1, 0),
+                (0, 0),
+                (1, 0),
+
+                (-1, -1),
+                (0, -1),
+                (1, -1)
+            };
+
+            foreach (var move in moveBy)
+            {
+                if (newPoint.X + move.MoveX == point.X && newPoint.Y + move.MoveY == point.Y)
+                    return true;
+            }
+
+            return false;
         }
 
 
@@ -128,12 +296,12 @@ namespace LicznikObiektow
             var width = image.GetLength(0);
             var height = image.GetLength(1);
 
-            for (int i = 0; i < width; i++)
+            for (int y = 0; y < height; y++)
             {
-                for (int j = 0; j < height; j++)
+                for (int x = 0; x < width; x++)
                 {
-                    var color = image[i, j];
-                    var point = new Point(i, j);
+                    var color = image[x, y];
+                    var point = new Point(x, y);
 
                     if (dictionary.ContainsKey(color))
                     {
@@ -171,6 +339,37 @@ namespace LicznikObiektow
                     if (found != null)
                     {
                         result[i, j] = Color.Red;
+                    }
+                    else
+                    {
+                        result[i, j] = image[i, j];
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public static Color[,] DrawEdges2(Color[,] image, Dictionary<int, List<Point>> Groups)
+        {
+            var width = image.GetLength(0);
+            var height = image.GetLength(1);
+
+            var result = new Color[width, height];
+
+            var rnd = new Random();
+
+            var dictionaryColors = Groups.ToDictionary(x => x.Key, x => Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256)));
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    var found = Groups.Where(x => x.Value.Any(e => e.X == i && e.Y == j)).ToList();
+
+                    if (found.Any())
+                    {
+                        result[i, j] = dictionaryColors[found.First().Key];
                     }
                     else
                     {

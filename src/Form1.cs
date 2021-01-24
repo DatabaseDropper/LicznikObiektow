@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LicznikObiektow
@@ -27,25 +28,35 @@ namespace LicznikObiektow
                 if (fd.ShowDialog() == DialogResult.OK)
                 {
                     pictureBox1.Image = Image.FromFile(fd.FileName);
-                    _image = Imaging.ConvertFileTo2DArray(fd.FileName);
+                    _image = Imaging.ConvertFileTo2DArrayWithGrayScale(fd.FileName);
                     btn_AnalizaObrazu.Visible = true;
                 }
             }
         }
 
-        private void btn_AnalizaObrazu_Click(object sender, EventArgs e)
+        private async void btn_AnalizaObrazu_Click(object sender, EventArgs e)
         {
-            var info = Imaging.GetImageDetails(_image);
+            Color[,] newImage = null;
+            await Task.Run(() =>
+            {
+                var info = Imaging.GetImageDetails2(_image);
 
-            var newImage = Imaging.DrawEdges(_image, info.Edges);
+                newImage = Imaging.DrawEdges2(_image, info.Groups);
+            });
 
-            var sfd = new SaveFileDialog(); 
+            var sfd = new SaveFileDialog();
             sfd.Filter = "bmp (*.bmp)|*.bmp|All files (*.*)|*.*";
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 Imaging.DrawImage(sfd.FileName, newImage);
                 pictureBox2.Image = Image.FromFile(sfd.FileName);
             }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            pictureBox1.Dispose();
+            pictureBox2.Dispose();
         }
     }
 }
